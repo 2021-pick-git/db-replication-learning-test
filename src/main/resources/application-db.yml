@@ -11,4 +11,11 @@ datasource:
       name: slave-2
       url: jdbc:mariadb://13.125.250.121:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
 
-
+spring:
+  jpa:
+    properties:
+      hibernate:
+        show_sql: true
+        generated-ddl: true
+        format_sql: true
+        physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
