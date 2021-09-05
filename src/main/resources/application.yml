@@ -1,0 +1,15 @@
+spring:
+#  datasource:
+#    url: jdbc:mariadb://15.164.213.202:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
+#    username: master
+#    password: passwd
+  jpa:
+    show-sql: true
+    properties:
+      hibernate:
+        dialects: org.hibernate.dialect.MySQL8Dialect
+        format_sql: true
+      generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+
