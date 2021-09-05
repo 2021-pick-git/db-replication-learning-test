@@ -13,13 +13,17 @@ datasource:
 
 spring:
   jpa:
+    show_sql: true
     properties:
       hibernate:
-        dialects: org.hibernate.dialect.MariaDBDialect
-        show_sql: true
-        generated-ddl: true
+        dialect: org.hibernate.dialect.MySQL57Dialect
         format_sql: true
         physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+    generate-ddl: true
+    hibernate:
+      ddl-auto: create-drop
+
+
 
 
 #spring:
