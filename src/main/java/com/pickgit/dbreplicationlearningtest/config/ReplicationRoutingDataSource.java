@@ -2,7 +2,7 @@ package com.pickgit.dbreplicationlearningtest.config;
 
 import static java.util.stream.Collectors.toList;
 
-import com.pickgit.dbreplicationlearningtest.config.replication.Slaves;
+import com.pickgit.dbreplicationlearningtest.config.replication.SlaveNames;
 import java.util.List;
 import java.util.Map;
 import org.springframework.jdbc.datasource.lookup.AbstractRoutingDataSource;
@@ -10,26 +10,25 @@ import org.springframework.transaction.support.TransactionSynchronizationManager
 
 public class ReplicationRoutingDataSource extends AbstractRoutingDataSource {
 
-    private Slaves slaves;
+    private SlaveNames slaveNames;
 
     @Override
     public void setTargetDataSources(Map<Object, Object> targetDataSources) {
         super.setTargetDataSources(targetDataSources);
 
-        List<SlaveDataSourceProperties> replicas = targetDataSources.keySet().stream()
-            .map(ReplicaDataSourceProperties.class::cast)
-            .filter(replicaDataSourceProperties -> !replicaDataSourceProperties.isMaster())
-            .map(SlaveDataSourceProperties.class::cast)
+        List<String> replicas = targetDataSources.keySet().stream()
+            .map(Object::toString)
+            .filter(string -> string.contains("slave"))
             .collect(toList());
 
-        this.slaves = new Slaves(replicas);
+        this.slaveNames = new SlaveNames(replicas);
     }
 
     @Override
     protected String determineCurrentLookupKey() {
         boolean isReadOnly = TransactionSynchronizationManager.isCurrentTransactionReadOnly();
         if (isReadOnly) {
-            return slaves.getNextName();
+            return slaveNames.getNextName();
         }
 
         return "master";

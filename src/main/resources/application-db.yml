@@ -1,21 +1,21 @@
-datasource:
-  master:
-    url: jdbc:mariadb://15.164.213.202:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
-    username: replication
-    password: passwd
-  slave:
-    slave1:
-      name: slave-1
-      url: jdbc:mariadb://13.125.208.164:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
-    slave2:
-      name: slave-2
-      url: jdbc:mariadb://13.125.250.121:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
-
-spring:
-  jpa:
-    properties:
-      hibernate:
-        show_sql: true
-        generated-ddl: true
-        format_sql: true
-        physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy
+#datasource:
+#  master:
+#    url: jdbc:mariadb://15.164.213.202:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
+#    username: replication
+#    password: passwd
+#  slave:
+#    slave1:
+#      name: slave-1
+#      url: jdbc:mariadb://13.125.208.164:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
+#    slave2:
+#      name: slave-2
+#      url: jdbc:mariadb://13.125.250.121:9000/pickgit?serverTimezone=UTC&characterEncoding=UTF-8
+#
+#spring:
+#  jpa:
+#    properties:
+#      hibernate:
+#        show_sql: true
+#        generated-ddl: true
+#        format_sql: true
+#        physical_naming_strategy: org.springframework.boot.orm.jpa.hibernate.SpringPhysicalNamingStrategy

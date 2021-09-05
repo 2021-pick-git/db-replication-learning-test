@@ -47,4 +47,35 @@ public class MasterDataSourceProperties implements ReplicaDataSourceProperties {
     public Map<String, SlaveDataSourceProperties> getSlaves() {
         return slaves;
     }
+
+    public void setUrl(String url) {
+        this.url = url;
+    }
+
+    public void setUsername(String username) {
+        this.username = username;
+    }
+
+    public void setPassword(String password) {
+        this.password = password;
+    }
+
+    public static class SlaveDataSourceProperties {
+
+        private final String name;
+        private final String url;
+
+        public SlaveDataSourceProperties(String name, String url) {
+            this.name = name;
+            this.url = url;
+        }
+
+        public String getName() {
+            return name;
+        }
+
+        public String getUrl() {
+            return url;
+        }
+    }
 }

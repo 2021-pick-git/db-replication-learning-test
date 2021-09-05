@@ -3,7 +3,11 @@ package com.pickgit.dbreplicationlearningtest.config;
 import static java.util.stream.Collectors.toMap;
 
 import com.zaxxer.hikari.HikariDataSource;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.function.Function;
 import java.util.stream.Stream;
 import javax.persistence.EntityManagerFactory;
 import javax.sql.DataSource;
@@ -37,31 +41,27 @@ public class DataSourceConfig {
     }
 
     @Bean
-    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
-        EntityManagerFactoryBuilder entityManagerFactoryBuilder =
-            createEntityManagerFactoryBuilder(jpaProperties);
-
-        return entityManagerFactoryBuilder.dataSource(dataSource())
-            .packages("com.pickgit.dbreplicationlearningtest")
-            .build();
-    }
-
-    private EntityManagerFactoryBuilder createEntityManagerFactoryBuilder(JpaProperties jpaProperties) {
-        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
-        return new EntityManagerFactoryBuilder(vendorAdapter, jpaProperties.getProperties(), null);
-    }
-
-    @Bean
-    public DataSource dataSource() {
-        return new LazyConnectionDataSourceProxy(routingDataSource());
-    }
-
-    @Bean
     public DataSource routingDataSource() {
-        Map<Object, Object> dataSources = Stream.of(dataSourceProperties, dataSourceProperties.getSlaves())
-            .map(ReplicaDataSourceProperties.class::cast)
-            .collect(toMap(ReplicaDataSourceProperties::getName, replicaDataSourceProperties -> createDataSource(
-                replicaDataSourceProperties.getUrl())));
+
+        DataSource master = createDataSource(dataSourceProperties.getUrl());
+
+        Map<Object, Object> dataSources = new HashMap<>();
+        dataSources.put("master", master);
+        dataSourceProperties.getSlaves()
+            .forEach((key, value) -> dataSources
+                .put(value.getName(), createDataSource(value.getUrl())));
+
+//        Map<Object, Object> dataSources = Stream.of(
+//            List.of(master).stream(),
+//            dataSourceProperties.getSlaves().keySet().stream()
+//        )
+//            .flatMap(Function.identity())
+//            .map(ReplicaDataSourceProperties.class::cast)
+//            .collect(toMap(
+//                ReplicaDataSourceProperties::getName,
+//                replicaDataSourceProperties -> createDataSource(
+//                    replicaDataSourceProperties.getUrl())
+//            ));
 
         ReplicationRoutingDataSource replicationRoutingDataSource = new ReplicationRoutingDataSource();
         replicationRoutingDataSource.setDefaultTargetDataSource(dataSources.get("master"));
@@ -81,7 +81,31 @@ public class DataSourceConfig {
     }
 
     @Bean
-    public PlatformTransactionManager transactionManager(EntityManagerFactory entityManagerFactory) {
-        return new JpaTransactionManager(entityManagerFactory);
+    public DataSource dataSource() {
+        return new LazyConnectionDataSourceProxy(routingDataSource());
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager(
+        EntityManagerFactory entityManagerFactory) {
+        JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
+        jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
+        return jpaTransactionManager;
+    }
+
+    @Bean
+    public LocalContainerEntityManagerFactoryBean entityManagerFactory() {
+        EntityManagerFactoryBuilder entityManagerFactoryBuilder =
+            createEntityManagerFactoryBuilder(jpaProperties);
+
+        return entityManagerFactoryBuilder.dataSource(dataSource())
+            .packages("com.pickgit.dbreplicationlearningtest")
+            .build();
+    }
+
+    private EntityManagerFactoryBuilder createEntityManagerFactoryBuilder(
+        JpaProperties jpaProperties) {
+        HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
+        return new EntityManagerFactoryBuilder(vendorAdapter, jpaProperties.getProperties(), null);
     }
 }
