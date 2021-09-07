@@ -1,4 +1,4 @@
-package com.pickgit.dbreplicationlearningtest.config.replication;
+package com.pickgit.dbreplicationlearningtest.config;
 
 import java.util.List;
 

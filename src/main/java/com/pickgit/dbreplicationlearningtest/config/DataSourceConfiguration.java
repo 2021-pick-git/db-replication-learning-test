@@ -28,28 +28,34 @@ import org.springframework.transaction.PlatformTransactionManager;
 @Configuration
 @EnableAutoConfiguration(exclude = DataSourceAutoConfiguration.class)
 @EnableConfigurationProperties(MasterDataSourceProperties.class)
-public class DataSourceConfig {
+public class DataSourceConfiguration {
 
     private final MasterDataSourceProperties dataSourceProperties;
     private final JpaProperties jpaProperties;
 
-    public DataSourceConfig(
+    public DataSourceConfiguration(
         MasterDataSourceProperties dataSourceProperties,
-        JpaProperties jpaProperties) {
+        JpaProperties jpaProperties
+    ) {
         this.dataSourceProperties = dataSourceProperties;
         this.jpaProperties = jpaProperties;
     }
 
     @Bean
     public DataSource routingDataSource() {
-
-        DataSource master = createDataSource(dataSourceProperties.getUrl());
+        DataSource master = createDataSource(
+            dataSourceProperties.getUrl(),
+            dataSourceProperties.getUsername(),
+            dataSourceProperties.getPassword()
+        );
 
         Map<Object, Object> dataSources = new HashMap<>();
         dataSources.put("master", master);
-        dataSourceProperties.getSlaves()
-            .forEach((key, value) -> dataSources
-                .put(value.getName(), createDataSource(value.getUrl())));
+        dataSourceProperties.getSlave().forEach((key, value) ->
+                dataSources.put(value.getName(), createDataSource(
+                    value.getUrl(), value.getUsername(), value.getPassword()
+                ))
+            );
 
         ReplicationRoutingDataSource replicationRoutingDataSource = new ReplicationRoutingDataSource();
         replicationRoutingDataSource.setDefaultTargetDataSource(dataSources.get("master"));
@@ -58,27 +64,14 @@ public class DataSourceConfig {
         return replicationRoutingDataSource;
     }
 
-    private DataSource createDataSource(String url) {
+    private DataSource createDataSource(String url, String username, String password) {
         return DataSourceBuilder.create()
             .type(HikariDataSource.class)
             .url(url)
             .driverClassName("org.mariadb.jdbc.Driver")
-            .username(dataSourceProperties.getUsername())
-            .password(dataSourceProperties.getPassword())
+            .username(username)
+            .password(password)
             .build();
-    }
-
-    @Bean
-    public DataSource dataSource() {
-        return new LazyConnectionDataSourceProxy(routingDataSource());
-    }
-
-    @Bean
-    public PlatformTransactionManager transactionManager(
-        EntityManagerFactory entityManagerFactory) {
-        JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
-        jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
-        return jpaTransactionManager;
     }
 
     @Bean
@@ -92,8 +85,22 @@ public class DataSourceConfig {
     }
 
     private EntityManagerFactoryBuilder createEntityManagerFactoryBuilder(
-        JpaProperties jpaProperties) {
+        JpaProperties jpaProperties
+    ) {
         HibernateJpaVendorAdapter vendorAdapter = new HibernateJpaVendorAdapter();
         return new EntityManagerFactoryBuilder(vendorAdapter, jpaProperties.getProperties(), null);
+    }
+
+    private DataSource dataSource() {
+        return new LazyConnectionDataSourceProxy(routingDataSource());
+    }
+
+    @Bean
+    public PlatformTransactionManager transactionManager(
+        EntityManagerFactory entityManagerFactory
+    ) {
+        JpaTransactionManager jpaTransactionManager = new JpaTransactionManager();
+        jpaTransactionManager.setEntityManagerFactory(entityManagerFactory);
+        return jpaTransactionManager;
     }
 }
