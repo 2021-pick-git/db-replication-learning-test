@@ -3,37 +3,44 @@ package com.pickgit.dbreplicationlearningtest.config;
 import java.util.HashMap;
 import java.util.Map;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import org.springframework.boot.context.properties.ConstructorBinding;
 
-@ConfigurationProperties(prefix = "datasource.master")
-public class MasterDataSourceProperties implements ReplicaDataSourceProperties {
+@ConfigurationProperties(prefix = "datasource")
+public class MasterDataSourceProperties {
 
     private String url;
     private String username;
     private String password;
-    private final Map<String, SlaveDataSourceProperties> slaves;
+
+    private Map<String, Slave> slaves;
 
     public MasterDataSourceProperties() {
-        this(new HashMap<>());
     }
 
     public MasterDataSourceProperties(
-        Map<String, SlaveDataSourceProperties> slaves) {
+        Map<String, Slave> slaves
+    ) {
         this.slaves = slaves;
     }
 
-    @Override
-    public String getName() {
-        return "master";
+    public MasterDataSourceProperties(String url, String username, String password) {
+        this.slaves = new HashMap<>();
+
+        this.url = url;
+        this.username = username;
+        this.password = password;
     }
 
-    @Override
+    public MasterDataSourceProperties(
+        Map<String, Slave> slaves, String url, String username, String password) {
+        this.slaves = slaves;
+        this.url = url;
+        this.username = username;
+        this.password = password;
+    }
+
     public String getUrl() {
         return url;
-    }
-
-    @Override
-    public boolean isMaster() {
-        return true;
     }
 
     public String getUsername() {
@@ -44,7 +51,7 @@ public class MasterDataSourceProperties implements ReplicaDataSourceProperties {
         return password;
     }
 
-    public Map<String, SlaveDataSourceProperties> getSlaves() {
+    public Map<String, Slave> getSlaves() {
         return slaves;
     }
 
@@ -60,14 +67,12 @@ public class MasterDataSourceProperties implements ReplicaDataSourceProperties {
         this.password = password;
     }
 
-    public static class SlaveDataSourceProperties {
+    public static class Slave {
 
-        private final String name;
-        private final String url;
+        private String name;
+        private String url;
 
-        public SlaveDataSourceProperties(String name, String url) {
-            this.name = name;
-            this.url = url;
+        public Slave() {
         }
 
         public String getName() {
@@ -76,6 +81,14 @@ public class MasterDataSourceProperties implements ReplicaDataSourceProperties {
 
         public String getUrl() {
             return url;
+        }
+
+        public void setName(String name) {
+            this.name = name;
+        }
+
+        public void setUrl(String url) {
+            this.url = url;
         }
     }
 }

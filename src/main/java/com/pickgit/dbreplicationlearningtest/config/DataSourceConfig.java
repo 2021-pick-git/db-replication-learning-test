@@ -51,18 +51,6 @@ public class DataSourceConfig {
             .forEach((key, value) -> dataSources
                 .put(value.getName(), createDataSource(value.getUrl())));
 
-//        Map<Object, Object> dataSources = Stream.of(
-//            List.of(master).stream(),
-//            dataSourceProperties.getSlaves().keySet().stream()
-//        )
-//            .flatMap(Function.identity())
-//            .map(ReplicaDataSourceProperties.class::cast)
-//            .collect(toMap(
-//                ReplicaDataSourceProperties::getName,
-//                replicaDataSourceProperties -> createDataSource(
-//                    replicaDataSourceProperties.getUrl())
-//            ));
-
         ReplicationRoutingDataSource replicationRoutingDataSource = new ReplicationRoutingDataSource();
         replicationRoutingDataSource.setDefaultTargetDataSource(dataSources.get("master"));
         replicationRoutingDataSource.setTargetDataSources(dataSources);

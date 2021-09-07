@@ -14,10 +14,10 @@ public class SlaveNames {
     public SlaveNames(String[] value) {
         this.value = value;
     }
+
     public String getNextName() {
         int index = counter;
         counter = (counter + 1) % value.length;
         return value[index];
     }
-
 }
